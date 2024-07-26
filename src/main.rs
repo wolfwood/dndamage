@@ -73,14 +73,15 @@ impl Attack {
     }
 
     fn sharpshooter(&self) -> Attack {
-        Attack {
-            hit: self.hit - 5,
-            dmg: Damage {
-                dmg: self.dmg.dmg,
-                fixed: self.dmg.fixed + 10,
-            },
-            crit: self.crit,
-        }
+        *self
+            + Attack {
+                hit: -5,
+                dmg: Damage {
+                    fixed: 10,
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
     }
 }
 
