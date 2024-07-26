@@ -290,6 +290,27 @@ mod tests {
     }
 
     #[test]
+    fn test_attack_sharpshooter() {
+        let dmg = Damage { dmg: 1.0, fixed: 1 };
+        let atk = Attack {
+            hit: 10,
+            dmg: dmg,
+            crit: dmg,
+        };
+
+        let sharp = Attack {
+            hit: 5,
+            dmg: Damage {
+                dmg: 1.0,
+                fixed: 11,
+            },
+            crit: dmg,
+        };
+
+        assert_eq!(atk.sharpshooter(), sharp);
+    }
+
+    #[test]
     fn test_attack_fixed_dmg() {
         let atk = Attack {
             dmg: Damage {
