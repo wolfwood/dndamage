@@ -120,7 +120,7 @@ impl Add for Attack {
         Attack {
             hit: self.hit + other.hit,
             dmg: self.dmg + other.dmg,
-            crit: self.crit + other.crit
+            crit: self.crit + other.crit,
         }
     }
 }
@@ -276,14 +276,17 @@ mod tests {
         let atk = Attack {
             hit: 1,
             dmg: dmg,
-            crit: dmg
+            crit: dmg,
         };
 
-        assert_eq!(atk + atk, Attack {
-            hit: 2,
-            dmg: dbl_dmg,
-            crit: dbl_dmg
-        });
+        assert_eq!(
+            atk + atk,
+            Attack {
+                hit: 2,
+                dmg: dbl_dmg,
+                crit: dbl_dmg
+            }
+        );
     }
 
     #[test]
