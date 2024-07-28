@@ -136,18 +136,18 @@ impl ExpectedDamage for Turn {
     fn expected_damage(&self, ac: i32) -> f32 {
         let mut total = 0.0;
         let mut miss = 1.0;
-        let mut crit_miss = 1.0;
+        let mut first_crit = 0.0;
 
         let crit_chance = 1.0 / 20.0;
 
         for d in self.action.iter().chain(self.bonus_action.iter()) {
             total += d.expected_damage(ac);
+            first_crit += crit_chance * miss;
             miss *= 1.0 - (d.hit_chance(ac) + crit_chance);
-            crit_miss *= 1.0 - crit_chance;
         }
 
         total += (1.0 - miss) * self.once_on_hit.hit();
-        total += (1.0 - crit_miss) * self.once_on_hit.dmg;
+        total += first_crit * self.once_on_hit.dmg;
 
         total
     }
@@ -497,5 +497,125 @@ mod tests {
         };
 
         assert_eq!(turn.expected_damage(11), 4.0 * atk.expected_damage(11));
+    }
+
+    #[test]
+    fn test_turn_once_on_hit_fixed_one_attack() {
+        let turn = Turn {
+            action: vec![Attack {
+                hit: 20,
+                ..Default::default()
+            }],
+            once_on_hit: Damage {
+                fixed: 20,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_eq!(turn.expected_damage(0), 19.0);
+    }
+
+    #[test]
+    fn test_turn_once_on_hit_fixed_multiple_attacks() {
+        let turn = Turn {
+            action: vec![
+                Attack {
+                    hit: 0,
+                    ..Default::default()
+                };
+                2
+            ],
+            once_on_hit: Damage {
+                fixed: 20,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_eq!(
+            format!("{:.4}", turn.expected_damage(20)),
+            format!("{:.4}", 1.95)
+        );
+
+        let turn = Turn {
+            action: vec![
+                Attack {
+                    hit: 0,
+                    ..Default::default()
+                };
+                4
+            ],
+            once_on_hit: Damage {
+                fixed: 20,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_eq!(
+            format!("{:.2}", turn.expected_damage(20)),
+            format!("{:.2}", 3.71)
+        );
+    }
+
+    #[test]
+    fn test_turn_once_on_hit_crit_one_attack() {
+        let turn = Turn {
+            action: vec![Attack {
+                hit: 20,
+                ..Default::default()
+            }],
+            once_on_hit: Damage {
+                dmg: 20.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_eq!(turn.expected_damage(0), 20.0);
+    }
+
+    #[test]
+    fn test_turn_once_on_hit_crit_multiple_attacks() {
+        let turn = Turn {
+            action: vec![
+                Attack {
+                    hit: 0,
+                    ..Default::default()
+                };
+                2
+            ],
+            once_on_hit: Damage {
+                dmg: 20.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_eq!(
+            format!("{:.4}", turn.expected_damage(20)),
+            format!("{:.4}", 2.0 * 1.95)
+        );
+
+        let turn = Turn {
+            action: vec![
+                Attack {
+                    hit: 0,
+                    ..Default::default()
+                };
+                4
+            ],
+            once_on_hit: Damage {
+                dmg: 20.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        assert_eq!(
+            format!("{:.2}", turn.expected_damage(20)),
+            format!("{:.2}", 2.0 * 3.71)
+        );
     }
 }
