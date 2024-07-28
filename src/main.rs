@@ -91,10 +91,11 @@ impl Turn {
             action: self.action.clone(),
             bonus_action: self.bonus_action.clone(),
 
-            once_on_hit: Damage {
-                dmg: self.once_on_hit.dmg + d4,
-                fixed: self.once_on_hit.fixed,
-            },
+            once_on_hit: self.once_on_hit
+                + Damage {
+                    dmg: d4,
+                    ..Default::default()
+                },
         }
     }
 }
