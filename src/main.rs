@@ -403,7 +403,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dpr_calc() {
+    fn test_dmg_dpr_calc() {
         let crossbow = crate::Attack {
             hit: 12,
             dmg: Damage {
