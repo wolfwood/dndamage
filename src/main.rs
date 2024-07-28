@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use paste;
-
 // --- Dice ---
 
 // return the expected_value of a die roll with the given number of faces
@@ -215,7 +213,7 @@ fn main() {
             print!(" | {:>5.2}", t.expected_damage(i));
         }
 
-        println!("");
+        println!();
     }
 }
 
