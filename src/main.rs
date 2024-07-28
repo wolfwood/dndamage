@@ -190,31 +190,32 @@ fn main() {
         action: vec![crossbow; 2],
         bonus_action: vec![crossbow],
         ..Default::default()
-    }
-    .foe();
+    };
 
     let sharp = Turn {
         action: vec![sharp; 2],
         bonus_action: vec![sharp],
         ..Default::default()
-    }
-    .foe();
+    };
 
     let melee = Turn {
         action: vec![longsword; 2],
         bonus_action: vec![unarmed; 2],
         ..Default::default()
-    }
-    .foe();
+    };
+
+    let turns = vec![crossbow, sharp, melee];
+
+    let foe_turns: Vec<Turn> = turns.into_iter().map(|x| x.foe()).collect();
 
     for i in 14..=28 {
-        println!(
-            " {}  | {:>4.1} | {:>4.1} | {:>5.2}",
-            i,
-            crossbow.expected_damage(i),
-            sharp.expected_damage(i),
-            melee.expected_damage(i)
-        );
+        print!(" {} ", i);
+
+        for t in &foe_turns {
+            print!(" | {:>5.2}", t.expected_damage(i));
+        }
+
+        println!("");
     }
 }
 
