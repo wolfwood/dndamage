@@ -618,4 +618,20 @@ mod tests {
             format!("{:.2}", 2.0 * 3.71)
         );
     }
+
+    #[test]
+    fn test_turn_foe() {
+        let turn = Turn {
+            action: vec![Attack {
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+        .foe();
+
+        assert_eq!(
+            format!("{:.4}", turn.expected_damage(20)),
+            format!("{:.4}", (1.0 / 20.0) * 2.0 * d4)
+        );
+    }
 }
