@@ -140,13 +140,7 @@ impl ExpectedDamage for Turn {
 
         let crit_chance = 1.0 / 20.0;
 
-        for d in &self.action {
-            total += d.expected_damage(ac);
-            miss *= 1.0 - (d.hit_chance(ac) + crit_chance);
-            crit_miss *= 1.0 - crit_chance;
-        }
-
-        for d in &self.bonus_action {
+        for d in self.action.iter().chain(self.bonus_action.iter()) {
             total += d.expected_damage(ac);
             miss *= 1.0 - (d.hit_chance(ac) + crit_chance);
             crit_miss *= 1.0 - crit_chance;
