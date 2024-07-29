@@ -43,7 +43,7 @@ struct Attack {
     crit: Damage,
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 struct Turn {
     action: Vec<Attack>,
     bonus_action: Vec<Attack>,
@@ -121,6 +121,52 @@ impl Add for Attack {
             hit: self.hit + other.hit,
             dmg: self.dmg + other.dmg,
             crit: self.crit + other.crit,
+        }
+    }
+}
+
+impl Add<Damage> for Attack {
+    type Output = Self;
+
+    fn add(self, dmg: Damage) -> Self {
+        Attack {
+            hit: self.hit,
+            dmg: self.dmg + dmg,
+            crit: self.crit,
+        }
+    }
+}
+
+impl Add<Attack> for Turn {
+    type Output = Self;
+
+    fn add(self, atk: Attack) -> Self {
+        Turn {
+            action: self.action.clone().into_iter().map(|a| a + atk).collect(),
+            bonus_action: self
+                .bonus_action
+                .clone()
+                .into_iter()
+                .map(|a| a + atk)
+                .collect(),
+            once_on_hit: self.once_on_hit,
+        }
+    }
+}
+
+impl Add<Damage> for Turn {
+    type Output = Self;
+
+    fn add(self, dmg: Damage) -> Self {
+        Turn {
+            action: self.action.clone().into_iter().map(|a| a + dmg).collect(),
+            bonus_action: self
+                .bonus_action
+                .clone()
+                .into_iter()
+                .map(|a| a + dmg)
+                .collect(),
+            once_on_hit: self.once_on_hit,
         }
     }
 }
@@ -280,6 +326,27 @@ mod tests {
                 hit: 2,
                 dmg: dbl_dmg,
                 crit: dbl_dmg
+            }
+        );
+    }
+
+    #[test]
+    fn test_attack_add_damage() {
+        let dmg = Damage { dmg: 1.0, fixed: 1 };
+        let dbl_dmg = Damage { dmg: 2.0, fixed: 2 };
+
+        let atk = Attack {
+            hit: 1,
+            dmg: dmg,
+            crit: dmg,
+        };
+
+        assert_eq!(
+            atk + dmg,
+            Attack {
+                hit: 1,
+                dmg: dbl_dmg,
+                crit: dmg
             }
         );
     }
@@ -497,6 +564,72 @@ mod tests {
         };
 
         assert_eq!(turn.expected_damage(11), 4.0 * atk.expected_damage(11));
+    }
+
+    #[test]
+    fn test_turn_add_damage() {
+        let dmg = Damage { dmg: 1.0, fixed: 1 };
+        let dbl_dmg = Damage { dmg: 2.0, fixed: 2 };
+
+        let atk = Attack {
+            hit: 1,
+            dmg: dmg,
+            crit: dmg,
+        };
+
+        let doublish_atk = Attack {
+            hit: 1,
+            dmg: dbl_dmg,
+            crit: dmg,
+        };
+
+        let turn = Turn {
+            action: vec![atk; 2],
+            bonus_action: vec![atk; 3],
+            once_on_hit: dmg,
+        };
+
+        assert_eq!(
+            turn + dmg,
+            Turn {
+                action: vec![doublish_atk; 2],
+                bonus_action: vec![doublish_atk; 3],
+                once_on_hit: dmg
+            }
+        )
+    }
+
+    #[test]
+    fn test_turn_add_attack() {
+        let dmg = Damage { dmg: 1.0, fixed: 1 };
+        let dbl_dmg = Damage { dmg: 2.0, fixed: 2 };
+
+        let atk = Attack {
+            hit: 1,
+            dmg: dmg,
+            crit: dmg,
+        };
+
+        let dbl_atk = Attack {
+            hit: 2,
+            dmg: dbl_dmg,
+            crit: dbl_dmg,
+        };
+
+        let turn = Turn {
+            action: vec![atk; 2],
+            bonus_action: vec![atk; 3],
+            once_on_hit: dmg,
+        };
+
+        assert_eq!(
+            turn + atk,
+            Turn {
+                action: vec![dbl_atk; 2],
+                bonus_action: vec![dbl_atk; 3],
+                once_on_hit: dmg
+            }
+        )
     }
 
     #[test]
