@@ -84,6 +84,7 @@ impl Attack {
 }
 
 impl Turn {
+    // Favored Foe
     fn foe(&self) -> Turn {
         Turn {
             action: self.action.clone(),
@@ -201,6 +202,7 @@ impl ExpectedDamage for Turn {
 // --- Methods ---
 
 fn main() {
+    // attacks
     let crossbow = Attack {
         hit: 12,
         dmg: Damage {
@@ -230,6 +232,7 @@ fn main() {
         crit: Damage { dmg: 0.0, fixed: 0 },
     };
 
+    // turns
     let crossbow = Turn {
         action: vec![crossbow; 2],
         bonus_action: vec![crossbow],
@@ -248,6 +251,7 @@ fn main() {
         ..Default::default()
     };
 
+    // what is compared
     let turns = vec![crossbow, sharp, melee];
 
     let foe_turns: Vec<Turn> = turns.into_iter().map(|x| x.foe()).collect();
