@@ -330,7 +330,7 @@ fn main() {
         println!("{:-<wi$}", "-", wi = 5 + turns.len() * (1 + w));
     }
 
-    for i in 14..=28 {
+    for i in 15..=22 {
         // AC
         print!(" {:>2} ", i);
 
