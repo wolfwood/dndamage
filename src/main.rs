@@ -309,15 +309,80 @@ fn main() {
     // what is compared
     let turns = vec![crossbow, sharp, melee];
 
-    let foe_turns: Vec<Turn> = turns.into_iter().map(|x| x.foe()).collect();
+    let foe_turns: Vec<Turn> = turns.iter().map(|x| x.foe()).collect();
+    let mark_turns: Vec<HuntersMark> = turns.iter().map(|x| x.mark()).collect();
+
+    // float formatting
+    let prec = 2;
+    let width = 2 + prec + 2; // 2 for sign and decimal point
+
+    // header
+    {
+        // leading and trailing space, max marker/separating space, 3 floats & one int
+        let w = 2 + 3 * (width + 1) + 2;
+
+        print!(" AC  ");
+        print!("|{:^w$}", "xbow");
+        print!("|{:^w$}", "sharp xbow");
+        print!("|{:^w$}", "sword/flurry",);
+        println!();
+
+        println!("{:-<wi$}", "-", wi = 5 + turns.len() * (1 + w));
+    }
 
     for i in 14..=28 {
-        print!(" {} ", i);
+        // AC
+        print!(" {:>2} ", i);
 
-        for t in &foe_turns {
-            print!(" | {:>5.2}", t.expected_damage(i));
+        let foe_dmg: Vec<f32> = foe_turns.iter().map(|t| t.expected_damage(i)).collect();
+        let mark_dmg: Vec<_> = mark_turns.iter().map(|h| h.breakeven(i)).collect();
+
+        let max_foe = foe_dmg.iter().map(|x| x.cmpable()).max().unwrap();
+        let max_mark = mark_dmg.iter().map(|(x, _, _)| x.cmpable()).max().unwrap();
+
+        for i in 0..foe_dmg.len() {
+            // foe damage with marker for the max valued column
+            print!(
+                " | {}{:>width$.prec$}",
+                if max_foe == foe_dmg[i].cmpable() {
+                    ">"
+                } else {
+                    " "
+                },
+                foe_dmg[i]
+            );
+
+            /* extra info for the max value mark column:
+            if it is also the max foe column (sign is negative), how much damage
+             is given up on the first round to cast Hunter's Mark
+            if a different column is max foe (sign is positive), how much damage is
+             increased over the max for damage
+            */
+            if max_mark == mark_dmg[i].0.cmpable() {
+                if max_foe == foe_dmg[i].cmpable() {
+                    print!(" {:>+width$.prec$}", mark_dmg[i].2);
+                } else {
+                    print!(" {:>+width$.prec$}", mark_dmg[i].0 - uncmp(max_foe));
+                }
+            } else {
+                print!(" {:width$}", "");
+            }
+
+            /* if Hunter's Mark for this column doesn't beat the max
+            foe damage then leave it blank, otherwise print how much
+            of a damage boost mark provides in subsequent rounds; and
+            how many rounds it takes to offset the first round loss of
+            bonus action attacks */
+            if mark_dmg[i].0.cmpable() < max_foe {
+                print!(" {:>width$} {}", "", " ");
+            } else {
+                print!(
+                    " {:>+width$.prec$} {}",
+                    mark_dmg[i].0 - foe_dmg[i],
+                    mark_dmg[i].1,
+                );
+            }
         }
-
         println!();
     }
 }
