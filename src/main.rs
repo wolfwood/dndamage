@@ -199,6 +199,21 @@ impl ExpectedDamage for Turn {
     }
 }
 
+// --- Util ---
+trait Convert2Cmp {
+    fn cmpable(&self) -> i32;
+}
+
+impl Convert2Cmp for f32 {
+    fn cmpable(&self) -> i32 {
+        (100.0 * *self).trunc() as i32
+    }
+}
+
+fn uncmp(x: i32) -> f32 {
+    x as f32 / 100.0
+}
+
 // --- Methods ---
 
 fn main() {
