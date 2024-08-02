@@ -51,6 +51,12 @@ struct Turn {
     once_on_hit: Damage,
 }
 
+struct HuntersMark {
+    unmodified: Turn,
+    first_turn: Turn,
+    max_damage: Turn,
+}
+
 // --- Methods ---
 
 impl Damage {
@@ -96,6 +102,40 @@ impl Turn {
                     ..Default::default()
                 },
         }
+    }
+
+    // Hunter's Mark
+    fn mark(&self) -> HuntersMark {
+        let bonus = Damage {
+            dmg: d6,
+            ..Default::default()
+        };
+
+        let mark = self.clone() + bonus;
+
+        HuntersMark {
+            unmodified: self.clone(),
+            first_turn: Turn {
+                action: self.action.clone(),
+                once_on_hit: self.once_on_hit,
+                ..Default::default()
+            },
+            max_damage: mark,
+        }
+    }
+}
+
+impl HuntersMark {
+    fn breakeven(&self, ac: i32) -> (f32, i32, f32) {
+        let base = self.unmodified.expected_damage(ac);
+        let first = self.first_turn.expected_damage(ac);
+        let max = self.max_damage.expected_damage(ac);
+
+        (
+            max,
+            1 + ((base - first) / (max - base)).ceil() as i32,
+            first - base,
+        )
     }
 }
 
@@ -290,6 +330,7 @@ mod tests {
     use crate::d4;
     use crate::d6;
     use crate::Attack;
+    use crate::Convert2Cmp;
     use crate::Damage;
     use crate::ExpectedDamage;
     use crate::Turn;
@@ -784,6 +825,53 @@ mod tests {
         assert_eq!(
             format!("{:.4}", turn.expected_damage(20)),
             format!("{:.4}", (1.0 / 20.0) * 2.0 * d4)
+        )
+    }
+
+    #[test]
+    fn test_turn_mark() {
+        let atk = Damage { dmg: d6, fixed: 5 };
+        let crit = Damage { dmg: d4, fixed: 3 };
+
+        let ac = 18;
+
+        let turn = Turn {
+            action: vec![
+                Attack {
+                    hit: 1,
+                    dmg: atk,
+                    crit: crit
+                };
+                3
+            ],
+            bonus_action: vec![
+                Attack {
+                    hit: 12,
+                    dmg: atk,
+                    crit: crit
+                };
+                2
+            ],
+            once_on_hit: Damage { dmg: d10, fixed: 4 },
+        };
+
+        let mark = turn.mark();
+
+        let (max, rounds, deficit) = mark.breakeven(ac);
+
+        assert_eq!(
+            max.cmpable(),
+            (turn.clone()
+                + Damage {
+                    dmg: d6,
+                    ..Default::default()
+                })
+            .expected_damage(ac)
+            .cmpable()
         );
+
+        assert_eq!(rounds, 4);
+
+        assert_eq!(deficit.cmpable(), -1863);
     }
 }
