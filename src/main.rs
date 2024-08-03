@@ -348,7 +348,7 @@ fn main() {
     };
 
     // what is compared
-    let turns = vec![crossbow, sharp, melee];
+    let turns = [crossbow, sharp, melee];
 
     let foe_turns: Vec<Turn> = turns.iter().map(|x| x.foe()).collect();
     let mark_turns: Vec<HuntersMark> = turns.iter().map(|x| x.mark()).collect();
@@ -415,7 +415,7 @@ fn main() {
             how many rounds it takes to offset the first round loss of
             bonus action attacks */
             if mark_dmg[i].0.cmpable() < max_foe {
-                print!(" {:>width$} {}", "", " ");
+                print!(" {:>width$} {0:1}", "");
             } else {
                 print!(
                     " {:>+width$.prec$} {}",
