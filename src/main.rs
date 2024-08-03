@@ -257,35 +257,76 @@ fn uncmp(x: i32) -> f32 {
 // --- Methods ---
 
 fn main() {
-    // attacks
-    let crossbow = Attack {
-        hit: 12,
+    // attack base
+    let dex = Attack {
+        hit: 5,
         dmg: Damage {
-            dmg: 1.0 * d6,
-            fixed: 6,
+            fixed: 5,
+            ..Default::default()
         },
-        crit: Damage {
-            dmg: 1.0 * d6,
-            fixed: 0,
-        },
+        ..Default::default()
     };
 
-    let sharp = crossbow.sharpshooter();
+    let proficiency_bonus = Attack {
+        hit: 4,
+        ..Default::default()
+    };
+
+    let monk = dex + proficiency_bonus;
+
+    // attack modifiers
+    let archery = Attack {
+        hit: 2,
+        ..Default::default()
+    };
+
+    let deft_strike = Attack {
+        crit: Damage {
+            dmg: d6,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let plusone = Attack {
+        hit: 1,
+        dmg: Damage {
+            fixed: 1,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    // weapons
+    let crossbow = Attack {
+        dmg: Damage {
+            dmg: d6,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
 
     let longsword = Attack {
-        hit: 10,
-        dmg: Damage { dmg: d10, fixed: 6 },
-        crit: Damage { dmg: d6, fixed: 0 },
+        dmg: Damage {
+            dmg: d10,
+            ..Default::default()
+        },
+        ..Default::default()
     };
 
     let unarmed = Attack {
-        hit: 9,
         dmg: Damage {
-            dmg: 1.0 * d6,
-            fixed: 5,
+            dmg: d6,
+            ..Default::default()
         },
-        crit: Damage { dmg: 0.0, fixed: 0 },
+        ..Default::default()
     };
+
+    // attacks
+    let crossbow = monk + archery + crossbow + plusone + deft_strike;
+    let sharp = crossbow.sharpshooter();
+    let longsword = monk + longsword + plusone + deft_strike;
+    let unarmed = monk + unarmed;
 
     // turns
     let crossbow = Turn {
