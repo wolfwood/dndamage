@@ -49,6 +49,7 @@ struct Turn {
     bonus_action: Vec<Attack>,
 
     once_on_hit: Damage,
+    name: String,
 }
 
 struct HuntersMark {
@@ -101,6 +102,7 @@ impl Turn {
                     dmg: d4,
                     ..Default::default()
                 },
+            name: self.name.clone(),
         }
     }
 
@@ -191,6 +193,7 @@ impl Add<Attack> for Turn {
                 .map(|a| a + atk)
                 .collect(),
             once_on_hit: self.once_on_hit,
+            name: self.name.clone(),
         }
     }
 }
@@ -208,6 +211,7 @@ impl Add<Damage> for Turn {
                 .map(|a| a + dmg)
                 .collect(),
             once_on_hit: self.once_on_hit,
+            name: self.name.clone(),
         }
     }
 }
@@ -332,18 +336,21 @@ fn main() {
     let crossbow = Turn {
         action: vec![crossbow; 2],
         bonus_action: vec![crossbow],
+        name: "xbow".to_string(),
         ..Default::default()
     };
 
     let sharp = Turn {
         action: vec![sharp; 2],
         bonus_action: vec![sharp],
+        name: "sharp xbow".to_string(),
         ..Default::default()
     };
 
     let melee = Turn {
         action: vec![longsword; 2],
         bonus_action: vec![unarmed; 2],
+        name: "sword&flurry".to_string(),
         ..Default::default()
     };
 
@@ -753,6 +760,7 @@ mod tests {
             action: vec![atk; 2],
             bonus_action: vec![atk; 3],
             once_on_hit: dmg,
+            name: "myturn".to_string(),
         };
 
         assert_eq!(
@@ -760,7 +768,8 @@ mod tests {
             Turn {
                 action: vec![doublish_atk; 2],
                 bonus_action: vec![doublish_atk; 3],
-                once_on_hit: dmg
+                once_on_hit: dmg,
+                name: "myturn".to_string(),
             }
         )
     }
@@ -786,6 +795,7 @@ mod tests {
             action: vec![atk; 2],
             bonus_action: vec![atk; 3],
             once_on_hit: dmg,
+            name: "myturn".to_string(),
         };
 
         assert_eq!(
@@ -793,7 +803,8 @@ mod tests {
             Turn {
                 action: vec![dbl_atk; 2],
                 bonus_action: vec![dbl_atk; 3],
-                once_on_hit: dmg
+                once_on_hit: dmg,
+                name: "myturn".to_string(),
             }
         )
     }
@@ -949,13 +960,18 @@ mod tests {
                 };
                 2
             ],
+            name: "myturn".to_string(),
             ..Default::default()
         }
         .mark();
 
         assert_eq!(dummy.first_turn.bonus_action.len(), 0);
         assert_eq!(dummy.first_turn.expected_damage(12), d6);
+        assert_eq!(dummy.max_damage.name, "myturn");
+    }
 
+    #[test]
+    fn test_turn_mark_calculations() {
         let atk = Damage { dmg: d10, fixed: 5 };
         let crit = Damage { dmg: d4, fixed: 3 };
 
@@ -979,6 +995,7 @@ mod tests {
                 2
             ],
             once_on_hit: Damage { dmg: d10, fixed: 4 },
+            ..Default::default()
         };
 
         let mark = turn.mark();
