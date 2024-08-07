@@ -116,7 +116,7 @@ impl Turn {
         HuntersMark {
             unmodified: self.clone(),
             first_turn: Turn {
-                action: self.action.clone(),
+                action: mark.action.clone(),
                 once_on_hit: self.once_on_hit,
                 ..Default::default()
             },
@@ -936,7 +936,27 @@ mod tests {
 
     #[test]
     fn test_turn_mark() {
-        let atk = Damage { dmg: d6, fixed: 5 };
+        let dummy = Turn {
+            action: vec![
+                Attack {
+                    ..Default::default()
+                };
+                2
+            ],
+            bonus_action: vec![
+                Attack {
+                    ..Default::default()
+                };
+                2
+            ],
+            ..Default::default()
+        }
+        .mark();
+
+        assert_eq!(dummy.first_turn.bonus_action.len(), 0);
+        assert_eq!(dummy.first_turn.expected_damage(12), d6);
+
+        let atk = Damage { dmg: d10, fixed: 5 };
         let crit = Damage { dmg: d4, fixed: 3 };
 
         let ac = 18;
@@ -965,6 +985,8 @@ mod tests {
 
         let (max, rounds, deficit) = mark.breakeven(ac);
 
+        assert_eq!(mark.first_turn.bonus_action.len(), 0);
+
         assert_eq!(
             max.cmpable(),
             (turn.clone()
@@ -978,6 +1000,6 @@ mod tests {
 
         assert_eq!(rounds, 4);
 
-        assert_eq!(deficit.cmpable(), -1863);
+        assert_eq!(deficit.cmpable(), -1921);
     }
 }
