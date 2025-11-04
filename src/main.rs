@@ -385,14 +385,14 @@ fn main() {
         let foe_dmg: Vec<f32> = foe_turns.iter().map(|t| t.expected_damage(i)).collect();
         let mark_dmg: Vec<_> = mark_turns.iter().map(|h| h.breakeven(i)).collect();
 
-        let max_foe = foe_dmg.iter().map(|x| x.cmpable()).max().unwrap();
-        let max_mark = mark_dmg.iter().map(|(x, _, _)| x.cmpable()).max().unwrap();
+        let max_foe = foe_dmg.iter().fold(0.0_f32,|a ,b| b.max(a));
+        let max_mark = mark_dmg.iter().fold(0.0_f32, |a, (b, _, _)| b.max(a));
 
         for i in 0..foe_dmg.len() {
             // foe damage with marker for the max valued column
             print!(
                 " | {}{:>width$.prec$}",
-                if max_foe == foe_dmg[i].cmpable() {
+                if max_foe == foe_dmg[i] {
                     ">"
                 } else {
                     " "
@@ -406,11 +406,11 @@ fn main() {
             if a different column is max foe (sign is positive), how much damage is
              increased over the max for damage
             */
-            if max_mark == mark_dmg[i].0.cmpable() {
-                if max_foe == foe_dmg[i].cmpable() {
+            if max_mark == mark_dmg[i].0 {
+                if max_foe == foe_dmg[i] {
                     print!(" {:>+width$.prec$}", mark_dmg[i].2);
                 } else {
-                    print!(" {:>+width$.prec$}", mark_dmg[i].0 - uncmp(max_foe));
+                    print!(" {:>+width$.prec$}", mark_dmg[i].0 - max_foe);
                 }
             } else {
                 print!(" {:width$}", "");
@@ -421,7 +421,7 @@ fn main() {
             of a damage boost mark provides in subsequent rounds; and
             how many rounds it takes to offset the first round loss of
             bonus action attacks */
-            if mark_dmg[i].0.cmpable() < max_foe {
+            if mark_dmg[i].0 < max_foe {
                 print!(" {:>width$} {0:1}", "");
             } else {
                 print!(
